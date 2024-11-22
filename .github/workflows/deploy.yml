@@ -1,0 +1,53 @@
+name: Deploy Hexo and Vite to Separate Repositories
+
+on:
+  push:
+    branches:
+      - main  # 监听主分支
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. 检出源代码
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    # 2. 设置 Node.js 环境
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    # 3. 构建 Hexo 项目
+    - name: Build Hexo project
+      run: |
+        cd hexo
+        npm install
+        npx hexo generate
+
+    # 4. 部署 Hexo 到 blog.uname.github.io 仓库
+    - name: Deploy Hexo to BlogPage
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GH_TOKEN }}
+        external_repository: Yoichi-Sato482/yoichi-sato482.github.io  # Hexo 部署仓库
+        publish_branch: gh-pages
+        publish_dir: hexo/public
+
+    # 5. 构建 Vite 项目
+    - name: Build Vite project
+      run: |
+        cd vite
+        npm install
+        npm run build
+
+    # 6. 部署 Vite 到 uname.github.io 仓库
+    - name: Deploy Vite to MainPage
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GH_TOKEN }}
+        external_repository: Yoichi-Sato482/yoichi-sato482.github.io       # Vite 部署仓库
+        publish_branch: main
+        publish_dir: vite/dist
